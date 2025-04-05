@@ -17,13 +17,15 @@ let pipeWidth = 64;
 let pipeHeight = 512;
 let pipeX = boardWidth;
 let pipeY = 0;
-let pipeGap = boardHeight/6;
+let pipeGap = boardHeight/5;
 
 let topPipeImg;
 let bottomPipeImg;
 
 //! physics
-let velocityX = -2;
+let pipeVelocityX = -2;
+let birdVelocityY = 0;
+let gravity = 0.4;
 
 let bird = {
     x : birdX,
@@ -54,8 +56,8 @@ window.onload = function() {
     bottomPipeImg.src = "bottompipe.png";
 
     requestAnimationFrame(updateGraphics);
-
-    setInterval(placePipes, 1500);
+    setInterval(placePipes, 1500); 
+    document.addEventListener("keydown", jump);
 }
 
 function updateGraphics() {
@@ -63,12 +65,14 @@ function updateGraphics() {
     context.clearRect(0, 0, boardWidth, boardHeight);
 
     //! bird
+    birdVelocityY += gravity;
+    bird.y += birdVelocityY;
     context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
 
     //! pipes 
     for(let i = 0; i < pipeArray.length; i++) {
         let pipe = pipeArray[i];
-        pipe.x += velocityX;
+        pipe.x += pipeVelocityX;
         context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
     }
 }
@@ -96,4 +100,10 @@ function placePipes() {
 
     pipeArray.push(topPipe);
     pipeArray.push(bottomPipe);
+} 
+
+function jump(e) {
+    if(e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
+        birdVelocityY = -6;
+    }
 }
