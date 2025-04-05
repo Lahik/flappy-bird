@@ -28,6 +28,7 @@ let birdVelocityY = 0;
 let gravity = 0.4;
 
 let gameOver = false;
+let score = 0;
 
 let bird = {
     x : birdX,
@@ -65,7 +66,13 @@ window.onload = function() {
 function renderGraphics() {
     requestAnimationFrame(renderGraphics);
 
-    if(gameOver) return;
+    if(gameOver) {
+        context.fillStyle = "red";
+        context.font = "45px Courier New";
+        context.fillText("Game Over", boardWidth/2 - 100, boardHeight/2);
+        context.fillText("Score: " + Math.floor(score), boardWidth/2 - 100, boardHeight/2 + 50);
+        return;
+    };
     
     context.clearRect(0, 0, boardWidth, boardHeight);
 
@@ -81,11 +88,20 @@ function renderGraphics() {
         pipe.x += pipeVelocityX;
         context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
 
+        if(!pipe.passed && pipe.x + pipe.width < bird.x) {
+            score += .5;
+            pipe.passed = true;
+        }
+        
         if(detectCollision(bird, pipe)) {
             gameOver = true;
         }
     }
     pipeArray = pipeArray.filter(pipe => pipe.x + pipe.width > 0);
+
+    context.fillStyle = "white";
+    context.font = "45px Sans-serif";
+    context.fillText(score, 5, 45);
 }
 
 function placePipes() {
@@ -117,6 +133,14 @@ function placePipes() {
 function jump(e) {
     if(e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
         birdVelocityY = -6;
+
+        if(gameOver) {
+            gameOver = false;
+            bird.y = boardHeight/2 - 100;
+            birdVelocityY = 0;
+            score = 0;
+            pipeArray = [];
+        }
     }
 }
 
