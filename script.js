@@ -85,6 +85,7 @@ function renderGraphics() {
             gameOver = true;
         }
     }
+    pipeArray = pipeArray.filter(pipe => pipe.x + pipe.width > 0);
 }
 
 function placePipes() {
