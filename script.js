@@ -17,7 +17,7 @@ let pipeWidth = 64;
 let pipeHeight = 512;
 let pipeX = boardWidth;
 let pipeY = 0;
-let pipeGap = boardHeight/5;
+let pipeGap = boardHeight/4;
 
 let topPipeImg;
 let bottomPipeImg;
@@ -26,6 +26,8 @@ let bottomPipeImg;
 let pipeVelocityX = -2;
 let birdVelocityY = 0;
 let gravity = 0.4;
+
+let gameOver = false;
 
 let bird = {
     x : birdX,
@@ -55,18 +57,22 @@ window.onload = function() {
     bottomPipeImg = new Image();
     bottomPipeImg.src = "bottompipe.png";
 
-    requestAnimationFrame(updateGraphics);
+    requestAnimationFrame(renderGraphics);
     setInterval(placePipes, 1500); 
     document.addEventListener("keydown", jump);
 }
 
-function updateGraphics() {
-    requestAnimationFrame(updateGraphics);
+function renderGraphics() {
+    requestAnimationFrame(renderGraphics);
+
+    if(gameOver) return;
+    
     context.clearRect(0, 0, boardWidth, boardHeight);
 
     //! bird
     birdVelocityY += gravity;
     bird.y += birdVelocityY;
+    bird.y = Math.max(bird.y + birdVelocityY, 0); // Prevent bird from going off the top of the screen
     context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
 
     //! pipes 
@@ -74,10 +80,15 @@ function updateGraphics() {
         let pipe = pipeArray[i];
         pipe.x += pipeVelocityX;
         context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
+
+        if(detectCollision(bird, pipe)) {
+            gameOver = true;
+        }
     }
 }
 
 function placePipes() {
+    if(gameOver) return;
     let randomPipeY = pipeY - pipeHeight/4 - Math.random() * (pipeHeight / 2);
 
     let topPipe = {
@@ -106,4 +117,14 @@ function jump(e) {
     if(e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
         birdVelocityY = -6;
     }
+}
+
+function detectCollision(bird, pipe) {
+    return bird.y + bird.height > boardHeight // checks if the bird is on the ground
+            || 
+           (bird.x < pipe.x + pipe.width && // checks the left position of bird is less than the right position of the pipe 
+           bird.x + bird.width > pipe.x && // checks the right position of the bird is greater than the left position of the pipe
+
+           bird.y < pipe.y + pipe.height && // checks the top position of the bird is less than the bottom position of the pipe
+           bird.y + bird.height > pipe.y) // checks the bottom position of the bird is greater than the top position of the pipe
 }
