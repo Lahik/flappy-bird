@@ -1,8 +1,8 @@
 
 //! board
 let board;
-let boardWidth = 360;
-let boardHeight = 640;
+let boardWidth = window.innerWidth;
+let boardHeight = window.innerHeight;
 let context;
 
 //! bird
@@ -132,7 +132,7 @@ function renderGraphics() {
     //! pipes 
     for(let i = 0; i < pipeArray.length; i++) {
         let pipe = pipeArray[i];
-        pipe.x += pipeVelocityX;
+        pipe.x += ((boardWidth > 600) && (pipe.x > 500) ? -15 : pipeVelocityX); // Increase speed for larger screens
         context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
 
         if(!pipe.passed && pipe.x + pipe.width < bird.x) {
