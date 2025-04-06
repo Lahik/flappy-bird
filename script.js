@@ -29,6 +29,7 @@ let gravity = 0.4;
 
 let gameOver = false;
 let score = 0;
+let gameStarted = false;
 
 let bird = {
     x : birdX,
@@ -43,9 +44,6 @@ window.onload = function() {
     board.height = boardHeight;
     context = board.getContext("2d");
 
-    context.fillStyle = "green";
-    context.fillRect(bird.x, bird.y, bird.width, bird.height);
-
     birdImg = new Image();
     birdImg.src = "flappybird.png";
     birdImg.onload = function() {
@@ -58,8 +56,6 @@ window.onload = function() {
     bottomPipeImg = new Image();
     bottomPipeImg.src = "bottompipe.png";
 
-    requestAnimationFrame(renderGraphics);
-    setInterval(placePipes, 1500); 
     document.addEventListener("keydown", jump);
 }
 
@@ -133,6 +129,12 @@ function placePipes() {
 function jump(e) {
     if(e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
         birdVelocityY = -6;
+
+        if (!gameStarted) {
+            gameStarted = true;
+            requestAnimationFrame(renderGraphics);
+            setInterval(placePipes, 1500);
+        }
 
         if(gameOver) {
             gameOver = false;
