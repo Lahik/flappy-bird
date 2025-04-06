@@ -79,6 +79,7 @@ window.onload = function() {
     bottomPipeImg.src = "bottompipe.png";
 
     document.addEventListener("keydown", jump);
+    document.addEventListener("touchstart", jump);
 }
 
 function renderGraphics() {
@@ -160,14 +161,16 @@ function placePipes() {
 } 
 
 function jump(e) {
-    if(e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
+    if(e.type === "touchstart" || e.code == "Space" || e.code == "ArrowUp") {
         birdVelocityY = -6;
 
         jumpSound.currentTime = 0; // rewind to start if already playing
         jumpSound.play();
 
         if (!gameStarted && birdsLoaded) {
-            gameSound.play();
+            setTimeout(() => {
+                gameSound.play();
+            }, 100);
             gameStarted = true;
             requestAnimationFrame(renderGraphics);
             setInterval(placePipes, 1500);
