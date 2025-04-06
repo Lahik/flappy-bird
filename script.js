@@ -11,6 +11,7 @@ let birdHeight = 24;
 let birdX = boardWidth/8;
 let birdY = boardHeight/2;
 let birdsLoaded = false;
+let birdRotation = 0;
 
 //! pipes
 let pipeArray = [];
@@ -85,7 +86,6 @@ window.onload = function() {
 function renderGraphics() {
     requestAnimationFrame(renderGraphics);
 
-    
     if(gameOver) {
         context.fillStyle = "red";
         context.font = "45px Courier New";
@@ -102,8 +102,27 @@ function renderGraphics() {
         currentBirdFrame = (currentBirdFrame + 1) % birdFrames.length;
     }
 
-    // Draw current bird frame
-    context.drawImage(birdFrames[currentBirdFrame], bird.x, bird.y, bird.width, bird.height);
+    // Update bird rotation based on velocity
+    if (birdVelocityY > 0) {
+        // Falling: rotate clockwise
+        birdRotation = Math.min(birdRotation + 0.1, Math.PI / 2); // Limit rotation to 90 degrees max
+    } else if (birdVelocityY < 0) {
+        // Jumping: rotate anti-clockwise
+        birdRotation = Math.max(birdRotation - 0.1, -Math.PI / 4); // Limit rotation to -45 degrees max
+    }
+
+    // Save the context state before rotating
+    context.save();
+    
+    // Set the rotation origin to the bird's center
+    context.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
+    context.rotate(birdRotation);
+    
+    // Draw current bird frame (adjust for rotation)
+    context.drawImage(birdFrames[currentBirdFrame], -bird.width / 2, -bird.height / 2, bird.width, bird.height);
+    
+    // Restore the context state after rotation
+    context.restore();
 
     //! bird
     birdVelocityY += gravity;
