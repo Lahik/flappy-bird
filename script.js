@@ -10,6 +10,7 @@ let birdWidth = 34;
 let birdHeight = 24;
 let birdX = boardWidth/8;
 let birdY = boardHeight/2;
+let birdsLoaded = false;
 
 //! pipes
 let pipeArray = [];
@@ -38,6 +39,11 @@ let pointSound = new Audio("audio/sfx_point.wav");
 let dieSound = new Audio("audio/sfx_die.wav");
 let hitSound = new Audio("audio/sfx_hit.wav");
 
+//! bird animation
+let birdFrames = [];
+let currentBirdFrame = 0;
+let birdFrameInterval = 0;
+
 let bird = {
     x : birdX,
     y : birdY,
@@ -51,10 +57,19 @@ window.onload = function() {
     board.height = boardHeight;
     context = board.getContext("2d");
 
-    birdImg = new Image();
-    birdImg.src = "flappybird.png";
-    birdImg.onload = function() {
-        context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
+    // Load all bird frames and then start the game
+    let loadedFrames = 0;
+    for (let i = 1; i <= 5; i++) {
+        let frame = new Image();
+        frame.src = `bird_images/flappybird${i}.png`;
+        frame.onload = function() {
+            loadedFrames++;
+            if (loadedFrames === 5) {
+                birdsLoaded = true;
+                context.drawImage(birdFrames[0], bird.x, bird.y, bird.width, bird.height);
+            }
+        };
+        birdFrames.push(frame);
     }
 
     topPipeImg = new Image();
@@ -69,21 +84,30 @@ window.onload = function() {
 function renderGraphics() {
     requestAnimationFrame(renderGraphics);
 
+    
     if(gameOver) {
         context.fillStyle = "red";
         context.font = "45px Courier New";
         context.fillText("Game Over", boardWidth/2 - 100, boardHeight/2);
         context.fillText("Score: " + Math.floor(score), boardWidth/2 - 100, boardHeight/2 + 50);
         return;
-    };
+    }
     
     context.clearRect(0, 0, boardWidth, boardHeight);
+    
+    // Cycle through bird frames
+    birdFrameInterval++;
+    if (birdFrameInterval % 5 === 0) { // adjust speed of flapping
+        currentBirdFrame = (currentBirdFrame + 1) % birdFrames.length;
+    }
+
+    // Draw current bird frame
+    context.drawImage(birdFrames[currentBirdFrame], bird.x, bird.y, bird.width, bird.height);
 
     //! bird
     birdVelocityY += gravity;
     bird.y += birdVelocityY;
     bird.y = Math.max(bird.y + birdVelocityY, 0); // Prevent bird from going off the top of the screen
-    context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
 
     //! pipes 
     for(let i = 0; i < pipeArray.length; i++) {
@@ -142,7 +166,7 @@ function jump(e) {
         jumpSound.currentTime = 0; // rewind to start if already playing
         jumpSound.play();
 
-        if (!gameStarted) {
+        if (!gameStarted && birdsLoaded) {
             gameSound.play();
             gameStarted = true;
             requestAnimationFrame(renderGraphics);
