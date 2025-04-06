@@ -31,6 +31,13 @@ let gameOver = false;
 let score = 0;
 let gameStarted = false;
 
+//! game audio
+let gameSound = new Audio("audio/bgm_mario.mp3");
+let jumpSound = new Audio("audio/sfx_wing.wav");
+let pointSound = new Audio("audio/sfx_point.wav");
+let dieSound = new Audio("audio/sfx_die.wav");
+let hitSound = new Audio("audio/sfx_hit.wav");
+
 let bird = {
     x : birdX,
     y : birdY,
@@ -87,9 +94,11 @@ function renderGraphics() {
         if(!pipe.passed && pipe.x + pipe.width < bird.x) {
             score += .5;
             pipe.passed = true;
+            pointSound.play();
         }
         
         if(detectCollision(bird, pipe)) {
+            gameSound.pause();
             gameOver = true;
         }
     }
@@ -130,13 +139,19 @@ function jump(e) {
     if(e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
         birdVelocityY = -6;
 
+        jumpSound.currentTime = 0; // rewind to start if already playing
+        jumpSound.play();
+
         if (!gameStarted) {
+            gameSound.play();
             gameStarted = true;
             requestAnimationFrame(renderGraphics);
             setInterval(placePipes, 1500);
         }
-
+        
         if(gameOver) {
+            gameSound.currentTime = 0; // rewind to start if already playing
+            gameSound.play();
             gameOver = false;
             bird.y = boardHeight/2 - 100;
             birdVelocityY = 0;
@@ -147,11 +162,18 @@ function jump(e) {
 }
 
 function detectCollision(bird, pipe) {
-    return bird.y + bird.height > boardHeight // checks if the bird is on the ground
-            || 
-           (bird.x < pipe.x + pipe.width && // checks the left position of bird is less than the right position of the pipe 
-           bird.x + bird.width > pipe.x && // checks the right position of the bird is greater than the left position of the pipe
+    isBirdFalled = bird.y + bird.height > boardHeight;
+    isBirdHitPipe = bird.x < pipe.x + pipe.width && // checks the left position of bird is less than the right position of the pipe 
+                    bird.x + bird.width > pipe.x && // checks the right position of the bird is greater than the left position of the pipe
 
-           bird.y < pipe.y + pipe.height && // checks the top position of the bird is less than the bottom position of the pipe
-           bird.y + bird.height > pipe.y) // checks the bottom position of the bird is greater than the top position of the pipe
+                    bird.y < pipe.y + pipe.height && // checks the top position of the bird is less than the bottom position of the pipe
+                    bird.y + bird.height > pipe.y // checks the bottom position of the bird is greater than the top position of the pipe
+
+    if(isBirdFalled) {
+        dieSound.play();
+    }else if(isBirdHitPipe) {
+        hitSound.play();
+    }
+
+    return isBirdFalled || isBirdHitPipe; 
 }
